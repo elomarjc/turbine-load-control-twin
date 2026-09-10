@@ -158,7 +158,7 @@ class TurbineTwinApp {
         };
 
         document.getElementById('btn-hud-settings')?.addEventListener('click', openDrawer);
-        document.getElementById('btn-trigger-controls-drawer')?.addEventListener('click', openDrawer);
+        
         document.getElementById('hud-mode-telem')?.addEventListener('click', openDrawer);
         document.getElementById('btn-close-telemetry')?.addEventListener('click', closeDrawer);
         backdrop?.addEventListener('click', closeDrawer);
@@ -245,6 +245,71 @@ class TurbineTwinApp {
 
         // Gust Card
         const gustBtn = document.getElementById('gustBtn');
+        
+        // Direct pointer touch drag on vertical HUD rails
+        function attachTurbineRailDrag(container, onFracChange) {
+            if (!container) return;
+            container.style.touchAction = 'none';
+            let dragging = false;
+            const handleDrag = (e) => {
+                const rect = container.getBoundingClientRect();
+                const frac = Math.max(0, Math.min(1, (rect.bottom - e.clientY) / rect.height));
+                onFracChange(frac);
+            };
+            container.addEventListener('pointerdown', (e) => {
+                dragging = true;
+                container.setPointerCapture?.(e.pointerId);
+                handleDrag(e);
+            });
+            container.addEventListener('pointermove', (e) => {
+                if (dragging) handleDrag(e);
+            });
+            const stopDrag = (e) => {
+                if (dragging) {
+                    dragging = false;
+                    try { container.releasePointerCapture?.(e.pointerId); } catch (_) {}
+                }
+            };
+            container.addEventListener('pointerup', stopDrag);
+            container.addEventListener('pointercancel', stopDrag);
+        }
+
+        const windRailTrack = document.getElementById('wind-rail-container');
+        attachTurbineRailDrag(windRailTrack, (frac) => {
+            const val = (4 + frac * 21).toFixed(1);
+            this.physics.vHub = parseFloat(val);
+            const wInput = document.getElementById('slider-wind-vertical');
+            if (wInput) wInput.value = val;
+            const deskSlider = document.getElementById('windSlider');
+            if (deskSlider) deskSlider.value = val;
+            const deskVal = document.getElementById('windVal');
+            if (deskVal) deskVal.innerText = `${val} m/s`;
+            const pill = document.getElementById('val-wind-pill');
+            if (pill) pill.textContent = `${val} m/s`;
+            const fill = document.getElementById('wind-rail-fill');
+            if (fill) fill.style.height = `${(frac * 100).toFixed(1)}%`;
+            const thumb = document.getElementById('wind-rail-thumb');
+            if (thumb) thumb.style.bottom = `${(frac * 100).toFixed(1)}%`;
+        });
+
+        const shearRailTrack = document.getElementById('shear-rail-container');
+        attachTurbineRailDrag(shearRailTrack, (frac) => {
+            const val = (0.05 + frac * 0.35).toFixed(2);
+            this.physics.shearExponent = parseFloat(val);
+            const sInput = document.getElementById('slider-shear-vertical');
+            if (sInput) sInput.value = val;
+            const deskSlider = document.getElementById('shearSlider');
+            if (deskSlider) deskSlider.value = val;
+            const deskVal = document.getElementById('shearVal');
+            if (deskVal) deskVal.innerText = val;
+            const pill = document.getElementById('val-shear-pill');
+            if (pill) pill.textContent = `α ${val}`;
+            const fill = document.getElementById('shear-rail-fill');
+            if (fill) fill.style.height = `${(frac * 100).toFixed(1)}%`;
+            const thumb = document.getElementById('shear-rail-thumb');
+            if (thumb) thumb.style.bottom = `${(frac * 100).toFixed(1)}%`;
+        });
+
         document.getElementById('hud-mode-gust')?.addEventListener('click', () => {
             gustBtn?.click();
             const cardGust = document.getElementById('hud-mode-gust');
