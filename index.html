@@ -1,155 +1,133 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wind Turbine Load & Individual Pitch Control (IPC) Digital Twin</title>
-    <link rel="stylesheet" href="css/style.css?v=5.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <!-- Three.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wind Turbine Load &amp; Individual Pitch Control (IPC) Digital Twin</title>
+<link href="css/style.css?v=8.0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<!-- Three.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-    <!-- App Header -->
-    <header class="app-header">
-        <div>
-            <div class="brand-title">
-                <span>Wind Turbine Load & Pitch Control Twin</span>
-                <span class="brand-badge">Offshore Aero-Elastic Architecture</span>
-            </div>
-            <p class="brand-subtitle">15 MW Offshore Aero-Elastic Dynamics: Coleman Multi-Blade Coordinate (MBC) Transform & Individual Pitch Control (IPC)</p>
-        </div>
-        <div class="header-controls">
-            <button id="guideBtn" class="btn-guide">🎮 Guided Tour</button>
-            <a href="https://github.com/elomarjc/turbine-load-control-twin" target="_blank" class="btn-link">GitHub Source</a>
-        </div>
-    </header>
+<!-- App Header -->
+<header class="app-header">
+<div>
+<div class="brand-title">
+<span>Wind Turbine Load &amp; Pitch Control Twin</span>
+<span class="brand-badge">Offshore Aero-Elastic Architecture</span>
+</div>
+<p class="brand-subtitle">15 MW Offshore Aero-Elastic Dynamics: Coleman Multi-Blade Coordinate (MBC) Transform &amp; Individual Pitch Control (IPC)</p>
+</div>
+<div class="header-controls">
+<button class="btn-guide" id="guideBtn">🎮 Guided Tour</button>
+<a class="btn-link" href="https://github.com/elomarjc/turbine-load-control-twin" target="_blank">GitHub Source</a>
+</div>
+</header>
+<!-- Telemetry Status Bar -->
+<section class="status-bar">
+<div class="status-item">
+<span class="status-label">Rotor Speed:</span>
+<span class="status-val" id="telemRpm">7.56 RPM</span>
+</div>
+<div class="status-item">
+<span class="status-label">Electrical Power:</span>
+<span class="status-val" id="telemPower">15.00 MW</span>
+</div>
+<div class="status-item">
+<span class="status-label">Blade Root Fatigue:</span>
+<span class="status-pill success" id="telemFatigue">-28.4% REDUCTION</span>
+</div>
+<div class="status-item">
+<span class="status-label">Pitch &amp; Tilt State:</span>
+<span class="status-val" id="telemPitch">β1: 7.2° | Md: 420 kNm</span>
+</div>
+</section>
+<!-- Main Dashboard Grid -->
+<main class="dashboard-grid">
+<!-- 1. 3D WebGL Turbine Viewport -->
+<div class="card live-sticky-screen">
+<div class="card-header">
+<span class="card-title">🌪️ 3D Aero-Elastic Turbine (Three.js WebGL)</span>
+<span style="font-size: 0.75rem; color: #64748b;">R = 118m | Hub H = 150m</span>
+<span class="live-screen-indicator">LIVE MONITOR</span></div>
+<div class="card-body" style="padding: 0;">
+<div id="turbine3dContainer"></div>
+<div style="padding: 10px 16px; font-size: 0.78rem; color: #64748b; background: #0a0e17; border-top: 1px solid #1e293b; display: flex; justify-content: space-between;">
+<span>Left-drag to rotate view | Red/Green vectors: Wind shear gradient v(z)</span>
+<span style="color: #38bdf8;">15 MW EnVentus Platform</span>
+</div>
+</div>
+</div>
+<!-- 2. Pitch Control & Environmental Settings -->
 
-    <!-- Telemetry Status Bar -->
-    <section class="status-bar">
-        <div class="status-item">
-            <span class="status-label">Rotor Speed:</span>
-            <span id="telemRpm" class="status-val">7.56 RPM</span>
-        </div>
-        <div class="status-item">
-            <span class="status-label">Electrical Power:</span>
-            <span id="telemPower" class="status-val">15.00 MW</span>
-        </div>
-        <div class="status-item">
-            <span class="status-label">Blade Root Fatigue:</span>
-            <span id="telemFatigue" class="status-pill success">-28.4% REDUCTION</span>
-        </div>
-        <div class="status-item">
-            <span class="status-label">Pitch & Tilt State:</span>
-            <span id="telemPitch" class="status-val">β1: 7.2° | Md: 420 kNm</span>
-        </div>
-    </section>
+<!-- 3. Dual Real-Time Telemetry Strip-Charts (Full Width) -->
 
-    <!-- Main Dashboard Grid -->
-    <main class="dashboard-grid">
-        <!-- 1. 3D WebGL Turbine Viewport -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">🌪️ 3D Aero-Elastic Turbine (Three.js WebGL)</span>
-                <span style="font-size: 0.75rem; color: #64748b;">R = 118m | Hub H = 150m</span>
-            </div>
-            <div class="card-body" style="padding: 0;">
-                <div id="turbine3dContainer"></div>
-                <div style="padding: 10px 16px; font-size: 0.78rem; color: #64748b; background: #0a0e17; border-top: 1px solid #1e293b; display: flex; justify-content: space-between;">
-                    <span>Left-drag to rotate view | Red/Green vectors: Wind shear gradient v(z)</span>
-                    <span style="color: #38bdf8;">15 MW EnVentus Platform</span>
+<div class="mobile-controls-pane"><div class="card">
+<div class="card-header">
+<span class="card-title">🎛️ Pitch Controller &amp; Aerodynamic Wind Shear</span>
+<span style="font-size: 0.75rem; color: #10b981;">Active Damping</span>
+</div>
+<div class="card-body">
+<div class="control-row">
+<span>Control Strategy:</span>
+<div class="btn-group">
+<button class="mode-btn" data-mode="cpc">Collective (CPC)</button>
+<button class="mode-btn active" data-mode="ipc">Individual (IPC)</button>
+</div>
+</div>
+<div class="control-row">
+<span>Hub Wind Speed (m/s):</span>
+<div class="slider-with-val">
+<input id="windSlider" max="22.0" min="8.0" step="0.5" type="range" value="12.0"/>
+<span class="slider-val-readout" id="windVal">12.0 m/s</span>
+</div>
+</div>
+<div class="control-row">
+<span>Wind Shear Exponent (α):</span>
+<div class="slider-with-val">
+<input id="shearSlider" max="0.35" min="0.05" step="0.01" type="range" value="0.20"/>
+<span class="slider-val-readout" id="shearVal">0.20</span>
+</div>
+</div>
+<div class="control-row">
+<span>Atmospheric Gust Injection:</span>
+<button class="btn-action" id="gustBtn">⚡ Trigger +5 m/s Wind Gust</button>
+</div>
+<div style="background: #090e18; border: 1px solid #1e293b; border-radius: 6px; padding: 12px; font-size: 0.8rem; color: #94a3b8; line-height: 1.6;">
+<strong>Coleman Multi-Blade Coordinate (MBC) Transform:</strong>
+                    Decouples rotating 1P blade root moments [<i>M</i><sub><i>y</i>1</sub>, <i>M</i><sub><i>y</i>2</sub>, <i>M</i><sub><i>y</i>3</sub>] into stationary tilt (<i>M</i><sub><i>d</i></sub>) and yaw (<i>M</i><sub><i>q</i></sub>) orthogonal axes. IPC superimposes cyclic pitch perturbations Δβ<sub><i>i</i></sub> to eliminate asymmetric structural bending moments without degrading energy yield.
                 </div>
-            </div>
-        </div>
-
-        <!-- 2. Pitch Control & Environmental Settings -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">🎛️ Pitch Controller & Aerodynamic Wind Shear</span>
-                <span style="font-size: 0.75rem; color: #10b981;">Active Damping</span>
-            </div>
-            <div class="card-body">
-                <div class="control-row">
-                    <span>Control Strategy:</span>
-                    <div class="btn-group">
-                        <button class="mode-btn" data-mode="cpc">Collective (CPC)</button>
-                        <button class="mode-btn active" data-mode="ipc">Individual (IPC)</button>
-                    </div>
-                </div>
-
-                <div class="control-row">
-                    <span>Hub Wind Speed (m/s):</span>
-                    <div class="slider-with-val">
-                        <input type="range" id="windSlider" min="8.0" max="22.0" step="0.5" value="12.0">
-                        <span id="windVal" class="slider-val-readout">12.0 m/s</span>
-                    </div>
-                </div>
-
-                <div class="control-row">
-                    <span>Wind Shear Exponent (α):</span>
-                    <div class="slider-with-val">
-                        <input type="range" id="shearSlider" min="0.05" max="0.35" step="0.01" value="0.20">
-                        <span id="shearVal" class="slider-val-readout">0.20</span>
-                    </div>
-                </div>
-
-                <div class="control-row">
-                    <span>Atmospheric Gust Injection:</span>
-                    <button id="gustBtn" class="btn-action">⚡ Trigger +5 m/s Wind Gust</button>
-                </div>
-
-                <div style="background: #090e18; border: 1px solid #1e293b; border-radius: 6px; padding: 12px; font-size: 0.8rem; color: #94a3b8; line-height: 1.6;">
-                    <strong>Coleman Multi-Blade Coordinate (MBC) Transform:</strong>
-                    Decouples rotating 1P blade root moments [<i>M</i><sub><i>y</i>1</sub>, <i>M</i><sub><i>y</i>2</sub>, <i>M</i><sub><i>y</i>3</sub>] into stationary tilt (<i>M</i><sub><i>d</i></sub>) and yaw (<i>M</i><sub><i>q</i></sub>) orthogonal axes. IPC superimposes cyclic pitch perturbations &Delta;&beta;<sub><i>i</i></sub> to eliminate asymmetric structural bending moments without degrading energy yield.
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. Dual Real-Time Telemetry Strip-Charts (Full Width) -->
-        <div class="card" style="grid-column: 1 / -1;">
-            <div class="card-header">
-                <span class="card-title">📈 Real-Time Structural Telemetry: Rotating Moments vs. Coleman Decoupled Coordinates</span>
-                <span style="font-size: 0.75rem; color: #38bdf8;">60 FPS Dynamic Trace</span>
-            </div>
-            <div class="card-body">
-                <canvas id="telemetryCanvas" width="920" height="240"></canvas>
-                <div class="control-row" style="margin-top: 8px;">
-                    <span style="color: #64748b; font-size: 0.78rem;">
+</div>
+</div><div class="card" style="grid-column: 1 / -1;">
+<div class="card-header">
+<span class="card-title">📈 Real-Time Structural Telemetry: Rotating Moments vs. Coleman Decoupled Coordinates</span>
+<span style="font-size: 0.75rem; color: #38bdf8;">60 FPS Dynamic Trace</span>
+</div>
+<div class="card-body">
+<canvas height="240" id="telemetryCanvas" width="920"></canvas>
+<div class="control-row" style="margin-top: 8px;">
+<span style="color: #64748b; font-size: 0.78rem;">
                         Top: Rotating Blade Flapwise Moments (Cyan: Blade 1, Green: Blade 2, Amber: Blade 3). 
                         Bottom: Coleman Decoupled Tilt \(M_d\) (Magenta) and Yaw \(M_q\) (Purple). Notice how IPC dampens the cyclic ripple.
                     </span>
-                    <span style="color: #10b981; font-size: 0.78rem; font-weight: 600;">Wöhler Fatigue Exponent m = 10</span>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer style="text-align: center; padding: 20px; font-size: 0.8rem; color: #64748b; border-top: 1px solid #1e293b; margin-top: 20px;">
-        Designed & Implemented by <strong>Jacob El-Omar</strong> | Aalborg University — Bachelor's Project in Electronic Engineering<br>
-        Inspired by engineering challenges in Multi-Megawatt Wind Turbine Loads & Control (LaC)
+<span style="color: #10b981; font-size: 0.78rem; font-weight: 600;">Wöhler Fatigue Exponent m = 10</span>
+</div>
+</div>
+</div></div></main>
+<!-- Footer -->
+<footer style="text-align: center; padding: 20px; font-size: 0.8rem; color: #64748b; border-top: 1px solid #1e293b; margin-top: 20px;">
+        Designed &amp; Implemented by <strong>Jacob El-Omar</strong> | Aalborg University — Bachelor's Project in Electronic Engineering<br/>
+        Inspired by engineering challenges in Multi-Megawatt Wind Turbine Loads &amp; Control (LaC)
     </footer>
-
-    <script type="module" src="js/app.js"></script>
-
-    <div class="guide-modal-footer">
-                <button id="guideStart" class="btn-guide-start">🚀 Start Interactive Simulator</button>
-            </div>
-        </div>
-    </div>
-
-    
-
-
-
-    
-
-
-    
-
-    <script>
+<script src="js/app.js" type="module"></script>
+<div class="guide-modal-footer">
+<button class="btn-guide-start" id="guideStart">🚀 Start Interactive Simulator</button>
+</div>
+<script>
     (function() {
         const steps = [
     {
@@ -258,7 +236,17 @@
             if (targetEl) {
                 highlightedEl = targetEl;
                 targetEl.classList.add('tour-spotlight-active');
-                targetEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                if (window.innerWidth <= 640) {
+                if (targetEl.closest('.live-sticky-screen')) {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    const rect = targetEl.getBoundingClientRect();
+                    const desiredY = 220 + (window.innerHeight - 220 - 160) / 2;
+                    window.scrollBy({ top: rect.top - desiredY, behavior: 'smooth' });
+                }
+            } else {
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            }
                 setTimeout(() => positionCard(targetEl), 140);
             } else {
                 card.style.top = '50%';
@@ -341,11 +329,7 @@
         }
     })();
     </script>
-
-
-    
-
-    <script>
+<script>
     (function() {
         const steps = [
     {
@@ -554,29 +538,26 @@
         }
     })();
     </script>
-
 <!-- Interactive Guided Yellow Spotlight Tour Engine (Zero Blur) -->
-    <div class="tour-card" id="tourCard">
-        <div class="tour-badge-row">
-            <span class="tour-step-badge" id="tourStepBadge">Step 1 of 4</span>
-            <button class="tour-btn-skip" id="tourBtnSkip">✕ Skip Tour</button>
-        </div>
-        <h4 class="tour-action-title" id="tourTitle">Action Title</h4>
-        <div class="tour-happens-box" id="tourHappens"><strong>⚡ What Happens:</strong> Live reaction</div>
-        <div class="tour-why-box" id="tourWhy"><strong>💡 Why:</strong> Reason</div>
-        <div class="tour-footer">
-            <div class="tour-dots" id="tourDots"></div>
-            <div class="tour-controls">
-                <button class="btn-tour-nav btn-tour-prev" id="tourBtnPrev">⇦ Back</button>
-                <button class="btn-tour-nav btn-tour-next" id="tourBtnNext">Next ➔</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Floating Tour Launcher Pill -->
-    <button class="btn-tour-launcher" id="btnTourLauncher">🎮 Guided Tour</button>
-
-    <script>
+<div class="tour-card" id="tourCard">
+<div class="tour-badge-row">
+<span class="tour-step-badge" id="tourStepBadge">Step 1 of 4</span>
+<button class="tour-btn-skip" id="tourBtnSkip">✕ Skip Tour</button>
+</div>
+<h4 class="tour-action-title" id="tourTitle">Action Title</h4>
+<div class="tour-happens-box" id="tourHappens"><strong>⚡ What Happens:</strong> Live reaction</div>
+<div class="tour-why-box" id="tourWhy"><strong>💡 Why:</strong> Reason</div>
+<div class="tour-footer">
+<div class="tour-dots" id="tourDots"></div>
+<div class="tour-controls">
+<button class="btn-tour-nav btn-tour-prev" id="tourBtnPrev">⇦ Back</button>
+<button class="btn-tour-nav btn-tour-next" id="tourBtnNext">Next ➔</button>
+</div>
+</div>
+</div>
+<!-- Floating Tour Launcher Pill -->
+<button class="btn-tour-launcher" id="btnTourLauncher">🎮 Guided Tour</button>
+<script>
     (function() {
         const steps = [
     {
