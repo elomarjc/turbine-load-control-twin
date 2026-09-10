@@ -22,7 +22,11 @@ export class Turbine3DView {
         this.scene.fog = new THREE.FogExp2(0x060911, 0.0018);
 
         this.camera = new THREE.PerspectiveCamera(42, this.width / this.height, 1, 1500);
-        this.camera.position.set(160, 160, 260);
+        const isMobileAspect = (this.width / this.height) < 1.0;
+        const camX = isMobileAspect ? 240 : 160;
+        const camY = isMobileAspect ? 200 : 160;
+        const camZ = isMobileAspect ? 420 : 260;
+        this.camera.position.set(camX, camY, camZ);
 
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize(this.width, this.height);
@@ -156,6 +160,40 @@ export class Turbine3DView {
         });
 
         window.addEventListener('mouseup', () => { isDragging = false; });
+
+        // Mobile touch rotation support
+        let prevTouchX = 0, prevTouchY = 0;
+        this.renderer.domElement.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                prevTouchX = e.touches[0].clientX;
+                prevTouchY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+        this.renderer.domElement.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1) {
+                let dx = e.touches[0].clientX - prevTouchX;
+                let dy = e.touches[0].clientY - prevTouchY;
+                prevTouchX = e.touches[0].clientX;
+                prevTouchY = e.touches[0].clientY;
+                let theta = dx * 0.008;
+                let phi = dy * 0.008;
+                let x = this.camera.position.x;
+                let z = this.camera.position.z;
+                this.camera.position.x = x * Math.cos(theta) - z * Math.sin(theta);
+                this.camera.position.z = x * Math.sin(theta) + z * Math.cos(theta);
+                this.camera.position.y = Math.max(20, Math.min(350, this.camera.position.y + phi * 100));
+                this.camera.lookAt(0, 140, 0);
+            }
+        }, { passive: true });
+
+        window.addEventListener('resize', () => {
+            this.width = this.container.clientWidth || window.innerWidth;
+            this.height = this.container.clientHeight || window.innerHeight;
+            this.camera.aspect = this.width / this.height;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(this.width, this.height);
+        });
+        
     }
 
     update(physics) {
