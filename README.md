@@ -43,7 +43,9 @@ flowchart TD
 
 Vertical wind velocity variation is modeled using the power-law profile:
 
-$$v(z) = v_{\text{hub}} \left( \frac{z}{H_{\text{hub}}} \right)^\alpha$$
+$$
+v(z) = v_{\text{hub}} \left( \frac{z}{H_{\text{hub}}} \right)^\alpha
+$$
 
 where:
 * $v_{\text{hub}}$ is the mean wind speed at hub height ($H_{\text{hub}} = 150\text{ m}$).
@@ -51,7 +53,9 @@ where:
 
 The elevation of each blade center-of-thrust varies with azimuth angle $\psi_i(t)$:
 
-$$z_i(t) = H_{\text{hub}} + r_{\text{eff}} \cos(\psi_i(t))$$
+$$
+z_i(t) = H_{\text{hub}} + r_{\text{eff}} \cos(\psi_i(t))
+$$
 
 where $r_{\text{eff}} \approx 0.66 R = 78\text{ m}$ is the effective radial aerodynamic center.
 
@@ -61,11 +65,15 @@ where $r_{\text{eff}} \approx 0.66 R = 78\text{ m}$ is the effective radial aero
 
 Relative inflow velocity at blade section is:
 
-$$v_{\text{rel}, i} = \sqrt{v_i^2 + (\Omega r_{\text{eff}})^2}$$
+$$
+v_{\text{rel}, i} = \sqrt{v_i^2 + (\Omega r_{\text{eff}})^2}
+$$
 
 The aerodynamic flapwise out-of-plane thrust force generates root bending moments:
 
-$$M_{yi}(t) = \frac{1}{2} \rho A_{\text{blade}} C_L(\alpha_i) v_{\text{rel}, i}^2 r_{\text{eff}}$$
+$$
+M_{yi}(t) = \frac{1}{2} \rho A_{\text{blade}} C_L(\alpha_i) v_{\text{rel}, i}^2 r_{\text{eff}}
+$$
 
 Because $v_i$ varies sinusoidally with rotor rotation, $M_{yi}$ exhibits pronounced $1P$ periodic oscillations.
 
@@ -75,25 +83,39 @@ Because $v_i$ varies sinusoidally with rotor rotation, $M_{yi}$ exhibits pronoun
 
 The forward Coleman transform projects the 3 rotating blade moments $[M_{y1}, M_{y2}, M_{y3}]$ into stationary non-rotating tilt ($M_d$) and yaw ($M_q$) coordinate frames:
 
-$$M_d = \frac{2}{3} \sum_{i=1}^{3} M_{yi} \cos(\psi_i)$$
+$$
+M_d = \frac{2}{3} \sum_{i=1}^{3} M_{yi} \cos(\psi_i)
+$$
 
-$$M_q = \frac{2}{3} \sum_{i=1}^{3} M_{yi} \sin(\psi_i)$$
+$$
+M_q = \frac{2}{3} \sum_{i=1}^{3} M_{yi} \sin(\psi_i)
+$$
 
-$$M_0 = \frac{1}{3} \sum_{i=1}^{3} M_{yi}$$
+$$
+M_0 = \frac{1}{3} \sum_{i=1}^{3} M_{yi}
+$$
 
 In the $dq$-frame, the $1P$ frequency component is modulated down to $0\text{ Hz}$ (DC bias), allowing standard decoupled PI controllers to eliminate steady-state tilt and yaw moments:
 
-$$\Delta\beta_d = K_p M_d + K_i \int M_d\, dt$$
+$$
+\Delta\beta_d = K_p M_d + K_i \int M_d\, dt
+$$
 
-$$\Delta\beta_q = K_p M_q + K_i \int M_q\, dt$$
+$$
+\Delta\beta_q = K_p M_q + K_i \int M_q\, dt
+$$
 
 The individual cyclic blade pitch demands are recovered via the inverse Coleman transformation:
 
-$$\Delta\beta_i(t) = \Delta\beta_d \cos(\psi_i) + \Delta\beta_q \sin(\psi_i)$$
+$$
+\Delta\beta_i(t) = \Delta\beta_d \cos(\psi_i) + \Delta\beta_q \sin(\psi_i)
+$$
 
 Total pitch commanded to actuator $i$:
 
-$$\beta_i(t) = \beta_0(t) + \Delta\beta_i(t)$$
+$$
+\beta_i(t) = \beta_0(t) + \Delta\beta_i(t)
+$$
 
 where $\beta_0(t)$ is the baseline collective pitch commanded by the rotor speed regulator.
 
@@ -103,7 +125,9 @@ where $\beta_0(t)$ is the baseline collective pitch commanded by the rotor speed
 
 Structural fatigue accumulation on composite blade roots is modeled using Palmgren-Miner linear cumulative damage with Wöhler S-N curves:
 
-$$D = \sum_{k} \frac{n_k}{N_k}, \quad N_k = C \left( \Delta M_{y, k} \right)^{-m}$$
+$$
+D = \sum_{k} \frac{n_k}{N_k}, \quad N_k = C \left( \Delta M_{y, k} \right)^{-m}
+$$
 
 where $m = 10$ is the material slope parameter for fiberglass/carbon epoxy composites. IPC reduces cyclic stress peak-to-peak variance by over $25\%$, significantly prolonging blade design life.
 
