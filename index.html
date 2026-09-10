@@ -17,11 +17,12 @@
         <div>
             <div class="brand-title">
                 <span>Wind Turbine Load & Pitch Control Twin</span>
-                <span class="brand-badge">Vestas R&D Architecture</span>
+                <span class="brand-badge">Offshore Aero-Elastic Architecture</span>
             </div>
             <p class="brand-subtitle">15 MW Offshore Aero-Elastic Dynamics: Coleman Multi-Blade Coordinate (MBC) Transform & Individual Pitch Control (IPC)</p>
         </div>
         <div class="header-controls">
+            <button id="guideBtn" class="btn-guide">📖 How to Use & Problem Solved</button>
             <a href="https://github.com/elomarjc/turbine-load-control-twin" target="_blank" class="btn-link">GitHub Source</a>
         </div>
     </header>
@@ -128,9 +129,95 @@
     <!-- Footer -->
     <footer style="text-align: center; padding: 20px; font-size: 0.8rem; color: #64748b; border-top: 1px solid #1e293b; margin-top: 20px;">
         Designed & Implemented by <strong>Jacob El-Omar</strong> | Aalborg University — Bachelor's Project in Electronic Engineering<br>
-        Targeting Vestas Wind Systems Loads & Control (LaC) Engineering Group in Aarhus
+        Inspired by engineering challenges in Multi-Megawatt Wind Turbine Loads & Control (LaC)
     </footer>
 
     <script type="module" src="js/app.js"></script>
+
+    <!-- Interactive Guide & Problem Overview Modal -->
+    <div id="guideModal" class="guide-modal-overlay">
+        <div class="guide-modal-card">
+            <div class="guide-modal-header">
+                <h2>🌬️ Wind Turbine Load Control & Aero-Elastic Twin</h2>
+                <button id="guideClose" class="guide-modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="guide-modal-body">
+                <div class="guide-section">
+                    <h3>🎯 The Industrial Problem Solved</h3>
+                    <p>15 MW offshore wind turbines use massive 118-meter flexible composite blades. Because wind speed increases with altitude (atmospheric wind shear), blades experience significantly higher aerodynamic thrust at the top of their rotation (268 m) than at the bottom (32 m). This creates asymmetric 1P cyclic bending moments on the rotor hub and main bearings, accelerating structural fatigue and causing millions in bearing replacements.</p>
+                </div>
+
+                <div class="guide-section">
+                    <h3>💡 How This Digital Twin Solves It</h3>
+                    <p>Applies the Coleman Multi-Blade Coordinate (MBC) transformation to project rotating blade root moments (My1, My2, My3) into non-rotating tilt (Md) and yaw (Mq) axes. Individual Pitch Control (IPC) regulates separate cyclic pitch angles (&Delta;&beta;_i) for each blade, eliminating structural fatigue while maintaining steady 12.55 MW electrical power.</p>
+                </div>
+
+                <div class="guide-section">
+                    <h3>🕹️ Interactive Quickstart Tutorial (Try This Now!)</h3>
+                    <ul class="guide-step-list">
+                    <li class="guide-step-item">
+                        <span class="guide-step-num">1</span>
+                        <div class="guide-step-content">
+                            <strong>Observe 1P Fatigue Under Collective Pitch:</strong> Set control to Collective (CPC) and drag Wind Shear Exponent (&alpha;) up to 0.25; watch the 3 rotating blade bending moments oscillate violently on the lower strip chart.
+                        </div>
+                    </li>
+                    <li class="guide-step-item">
+                        <span class="guide-step-num">2</span>
+                        <div class="guide-step-content">
+                            <strong>Engage Individual Pitch Control (IPC):</strong> Click 'Individual (IPC)': watch the Coleman transform decouple the loads and reduce blade root fatigue variance by &gt;35%.
+                        </div>
+                    </li>
+                    <li class="guide-step-item">
+                        <span class="guide-step-num">3</span>
+                        <div class="guide-step-content">
+                            <strong>Inject Atmospheric Wind Gusts:</strong> Click '⚡ Trigger +5 m/s Wind Gust' to test pitch actuator response under extreme turbulent conditions.
+                        </div>
+                    </li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>📊 Telemetry & Control Glossary</h3>
+                    <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem;">
+                        <li><strong>Coleman (d-q) Transform:</strong> Mathematical multi-blade coordinate transformation that converts rotating blade-frame flapwise moments into stationary orthogonal tilt (Md) and yaw (Mq) reference frames.</li><li><strong>1P Cyclic Loading:</strong> Once-per-revolution aerodynamic force variations caused by the vertical wind shear gradient across the rotor swept area.</li><li><strong>Rainflow Cycle Counting:</strong> Standard ASTM fatigue damage calculation algorithm that converts variable-amplitude stress histories into equivalent fatigue cycles.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="guide-modal-footer">
+                <button id="guideStart" class="btn-guide-start">🚀 Start Interactive Simulator</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Toggle Script -->
+    <script>
+        (function() {
+            const guideBtn = document.getElementById('guideBtn');
+            const guideModal = document.getElementById('guideModal');
+            const guideClose = document.getElementById('guideClose');
+            const guideStart = document.getElementById('guideStart');
+
+            function openModal() { if (guideModal) guideModal.classList.add('active'); }
+            function closeModal() { if (guideModal) guideModal.classList.remove('active'); }
+
+            if (guideBtn) guideBtn.addEventListener('click', openModal);
+            if (guideClose) guideClose.addEventListener('click', closeModal);
+            if (guideStart) guideStart.addEventListener('click', closeModal);
+            if (window.location.search.indexOf('guide') !== -1) openModal();
+
+            if (guideModal) {
+                guideModal.addEventListener('click', function(e) {
+                    if (e.target === guideModal) closeModal();
+                });
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && guideModal && guideModal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+        })();
+    </script>
+
 </body>
 </html>
