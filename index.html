@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wind Turbine Load & Individual Pitch Control (IPC) Digital Twin</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div>
+            <div class="brand-title">
+                <span>Wind Turbine Load & Pitch Control Twin</span>
+                <span class="brand-badge">Vestas R&D Architecture</span>
+            </div>
+            <p class="brand-subtitle">15 MW Offshore Aero-Elastic Dynamics: Coleman Multi-Blade Coordinate (MBC) Transform & Individual Pitch Control (IPC)</p>
+        </div>
+        <div class="header-controls">
+            <a href="https://github.com/elomarjc/turbine-load-control-twin" target="_blank" class="btn-link">GitHub Source</a>
+        </div>
+    </header>
+
+    <!-- Telemetry Status Bar -->
+    <section class="status-bar">
+        <div class="status-item">
+            <span class="status-label">Rotor Speed:</span>
+            <span id="telemRpm" class="status-val">7.56 RPM</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Electrical Power:</span>
+            <span id="telemPower" class="status-val">15.00 MW</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Blade Root Fatigue:</span>
+            <span id="telemFatigue" class="status-pill success">-28.4% REDUCTION</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Pitch & Tilt State:</span>
+            <span id="telemPitch" class="status-val">β1: 7.2° | Md: 420 kNm</span>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Grid -->
+    <main class="dashboard-grid">
+        <!-- 1. 3D WebGL Turbine Viewport -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">🌪️ 3D Aero-Elastic Turbine (Three.js WebGL)</span>
+                <span style="font-size: 0.75rem; color: #64748b;">R = 118m | Hub H = 150m</span>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                <div id="turbine3dContainer"></div>
+                <div style="padding: 10px 16px; font-size: 0.78rem; color: #64748b; background: #0a0e17; border-top: 1px solid #1e293b; display: flex; justify-content: space-between;">
+                    <span>Left-drag to rotate view | Red/Green vectors: Wind shear gradient v(z)</span>
+                    <span style="color: #38bdf8;">15 MW EnVentus Platform</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Pitch Control & Environmental Settings -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">🎛️ Pitch Controller & Aerodynamic Wind Shear</span>
+                <span style="font-size: 0.75rem; color: #10b981;">Active Damping</span>
+            </div>
+            <div class="card-body">
+                <div class="control-row">
+                    <span>Control Strategy:</span>
+                    <div class="btn-group">
+                        <button class="mode-btn" data-mode="cpc">Collective (CPC)</button>
+                        <button class="mode-btn active" data-mode="ipc">Individual (IPC)</button>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <span>Hub Wind Speed (m/s):</span>
+                    <div class="slider-with-val">
+                        <input type="range" id="windSlider" min="8.0" max="22.0" step="0.5" value="12.0">
+                        <span id="windVal" class="slider-val-readout">12.0 m/s</span>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <span>Wind Shear Exponent (α):</span>
+                    <div class="slider-with-val">
+                        <input type="range" id="shearSlider" min="0.05" max="0.35" step="0.01" value="0.20">
+                        <span id="shearVal" class="slider-val-readout">0.20</span>
+                    </div>
+                </div>
+
+                <div class="control-row">
+                    <span>Atmospheric Gust Injection:</span>
+                    <button id="gustBtn" class="btn-action">⚡ Trigger +5 m/s Wind Gust</button>
+                </div>
+
+                <div style="background: #090e18; border: 1px solid #1e293b; border-radius: 6px; padding: 12px; font-size: 0.8rem; color: #94a3b8; line-height: 1.6;">
+                    <strong>Coleman Multi-Blade Coordinate (MBC) Transform:</strong>
+                    Decouples rotating 1P blade root moments \([M_{y1}, M_{y2}, M_{y3}]\) into stationary tilt \(M_d\) and yaw \(M_q\) orthogonal axes. IPC superimposes cyclic pitch perturbations \(\Delta\beta_i\) to eliminate asymmetric structural bending moments without degrading energy yield.
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Dual Real-Time Telemetry Strip-Charts (Full Width) -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-header">
+                <span class="card-title">📈 Real-Time Structural Telemetry: Rotating Moments vs. Coleman Decoupled Coordinates</span>
+                <span style="font-size: 0.75rem; color: #38bdf8;">60 FPS Dynamic Trace</span>
+            </div>
+            <div class="card-body">
+                <canvas id="telemetryCanvas" width="920" height="240"></canvas>
+                <div class="control-row" style="margin-top: 8px;">
+                    <span style="color: #64748b; font-size: 0.78rem;">
+                        Top: Rotating Blade Flapwise Moments (Cyan: Blade 1, Green: Blade 2, Amber: Blade 3). 
+                        Bottom: Coleman Decoupled Tilt \(M_d\) (Magenta) and Yaw \(M_q\) (Purple). Notice how IPC dampens the cyclic ripple.
+                    </span>
+                    <span style="color: #10b981; font-size: 0.78rem; font-weight: 600;">Wöhler Fatigue Exponent m = 10</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer style="text-align: center; padding: 20px; font-size: 0.8rem; color: #64748b; border-top: 1px solid #1e293b; margin-top: 20px;">
+        Designed & Implemented by <strong>Jacob El-Omar</strong> | Aalborg University — Bachelor's Project in Electronic Engineering<br>
+        Targeting Vestas Wind Systems Loads & Control (LaC) Engineering Group in Aarhus
+    </footer>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

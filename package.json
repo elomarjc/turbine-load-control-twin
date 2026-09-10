@@ -1,0 +1,11 @@
+{
+  "name": "turbine-load-control-twin",
+  "version": "1.0.0",
+  "description": "Wind Turbine Individual Pitch Control (IPC) & Load Alleviation Digital Twin with Coleman MBC Transform",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/test_turbine_control.mjs"
+  },
+  "author": "Jacob El-Omar",
+  "license": "MIT"
+}
